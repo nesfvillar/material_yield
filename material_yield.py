@@ -4,34 +4,22 @@ from math import fabs
 def material_yield(strains, stresses, limit_strain=0.2e-2):
     assert len(strains) == len(stresses)
 
-    seen_strains = []
-    seen_stresses = []
-    E = 0
-    sy = 0
-    plastic_deformation = 0
-
-    for strain, stress in zip(strains, stresses):
-        if fabs(last(seen_strains) - plastic_deformation) >= limit_strain:
-            return (E, sy)
+    for i, (strain, stress) in enumerate(zip(strains, stresses)):
+        if i+1 >= len(strains):
+            break
         
-        seen_strains.append(strain)
-        seen_stresses.append(stress)
+        E = linear_reg(strains[:i+1], stresses[:i+1])
+        plastic_deformation = stress / E if E != 0 else 0
 
-        sy = seen_stresses[-1]
-        E = linear_reg(seen_strains, seen_stresses)
-        plastic_deformation = seen_stresses[-1] / E if E != 0 else 0
+        if fabs(strain - plastic_deformation) >= limit_strain:
+            break
 
-    print("The material did not yield in the data range provided")
-    return (E, sy)
+    return (E, stress)
 
 
 def linear_reg(xs, ys):
     assert len(xs) == len(ys)
-    return sum([y/x for x,y in zip(xs, ys) if x !=0]) / len(xs)
-
-
-def last(xs):
-    return xs[-1] if len(xs) != 0 else 0
+    return sum([y/x for x,y in zip(xs, ys) if x !=0]) / len(xs) if len(xs) !=0 else 0
 
 
 if __name__ == '__main__':
