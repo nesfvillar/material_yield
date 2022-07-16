@@ -19,19 +19,26 @@ def material_yield(strains, stresses, limit_strain=0.2e-2):
 
 def linear_reg(xs, ys):
     assert len(xs) == len(ys)
-    return sum([y/x for x,y in zip(xs, ys) if x !=0]) / len(xs) if len(xs) !=0 else 0
+    return sum([y/x for x,y in zip(xs, ys) if x !=0]) / len(xs)
 
 
 if __name__ == '__main__':
     import csv
-    with open('data.csv') as data:
-        reader = csv.reader(data, delimiter=' ')
-        strains = []
-        stresses = []
-        for row in reader:
-            strains.append(float(row[0]))
-            stresses.append(float(row[1]))
+    import sys
 
-    E, sy = material_yield(strains, stresses)
-    print(f'The elastic constant of the material is {E:.0f} MPa')
-    print(f'The yield stress of the material is {sy:.0f} MPa')
+    args = sys.argv[1:]
+    strains = []
+    stresses = []
+    for i, arg in enumerate(args):
+        strains.clear()
+        stresses.clear()
+        with open(arg) as data:
+            reader = csv.reader(data, delimiter=' ')
+            for row in reader:
+                strains.append(float(row[0]))
+                stresses.append(float(row[1]))
+
+        E, sy = material_yield(strains, stresses)
+        print(f'File {i+1}:')
+        print(f'The elastic constant  is {E:.0f} MPa')
+        print(f'The yield stress is {sy:.0f} MPa\n')
