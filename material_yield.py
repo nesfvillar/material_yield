@@ -10,17 +10,18 @@ def material_yield(strains, stresses, limit_strain=0.2e-2):
     sy = 0
     plastic_deformation = 0
 
-    while fabs(last(seen_strains) - plastic_deformation) <= limit_strain:
-        if len(strains) == 0:
-            print("The material did not yield in the data range provided")
-            break
+    for strain, stress in zip(strains, stresses):
+        if fabs(last(seen_strains) - plastic_deformation) >= limit_strain:
+            return (E, sy)
+        
+        seen_strains.append(strain)
+        seen_stresses.append(stress)
 
-        seen_strains.append(strains.pop(0))
-        seen_stresses.append(stresses.pop(0))
-        E = linear_reg(seen_strains, seen_stresses)
-        plastic_deformation = last(seen_stresses) / E if E != 0 else 0
         sy = seen_stresses[-1]
+        E = linear_reg(seen_strains, seen_stresses)
+        plastic_deformation = seen_stresses[-1] / E if E != 0 else 0
 
+    print("The material did not yield in the data range provided")
     return (E, sy)
 
 
